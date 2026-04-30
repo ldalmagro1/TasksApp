@@ -18,6 +18,7 @@ import { CategoriesModule } from './categories/categories.module';
         database: config.get('DATABASE_NAME', 'notes_db'),
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
         synchronize: true, // auto-create schema in dev
+        ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
       }),
       inject: [ConfigService],
     }),
