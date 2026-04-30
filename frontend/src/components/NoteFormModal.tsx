@@ -7,7 +7,7 @@ interface Props {
   note: Note | null;
   categories: Category[];
   preselectedCatIds?: string[];
-  onSave: (payload: { title: string; content: string; categoryIds: string[] }) => Promise<void>;
+  onSave: (payload: { title: string; content: string; categoryIds: string[]; date?: string | null }) => Promise<void>;
   onClose: () => void;
   onCategoryCreated?: (cat: Category) => void;
 }
@@ -22,6 +22,7 @@ export default function NoteFormModal({
 }: Props) {
   const [title, setTitle] = useState(note?.title ?? '');
   const [content, setContent] = useState(note?.content ?? '');
+  const [date, setDate] = useState(note?.date ? new Date(note.date).toISOString().split('T')[0] : '');
   const [selectedCatIds, setSelectedCatIds] = useState<Set<string>>(
     new Set(note?.categories?.map(c => c.id) ?? preselectedCatIds)
   );
@@ -31,6 +32,8 @@ export default function NoteFormModal({
   const [newCatName, setNewCatName] = useState('');
   const [creatingCat, setCreatingCat] = useState(false);
   const [catError, setCatError] = useState('');
+
+  const today = new Date().toISOString().split('T')[0];
 
   const titleRef = useRef<HTMLInputElement>(null);
 
@@ -44,7 +47,7 @@ export default function NoteFormModal({
   const handleSubmit = async () => {
     if (!title.trim()) return;
     setSaving(true);
-    await onSave({ title: title.trim(), content, categoryIds: Array.from(selectedCatIds) });
+    await onSave({ title: title.trim(), content, categoryIds: Array.from(selectedCatIds), date: date || null });
     setSaving(false);
   };
 
@@ -110,6 +113,16 @@ export default function NoteFormModal({
                 onValueChange={setContent}
                 minRows={5}
                 maxRows={10}
+              />
+              <Input
+                type="date"
+                label="Date"
+                placeholder="Select a date"
+                variant="bordered"
+                value={date}
+                onValueChange={setDate}
+                min={today}
+                max="9999-12-31"
               />
               
               <div className="flex flex-col gap-2 mt-2">

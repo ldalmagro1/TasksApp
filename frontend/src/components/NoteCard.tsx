@@ -6,16 +6,24 @@ interface Props {
   onView: () => void;
   onEdit: () => void;
   onDelete: () => void;
-  onArchiveToggle: () => void;
+  onArchiveToggle?: () => void;
+  onRestore?: () => void;
 }
 
 function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString('en-US', {
+  const parts = iso.split('T')[0].split('-');
+  let dateObj = new Date(iso);
+  if (parts.length === 3 && iso.length <= 10) {
+    dateObj = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+  } else if (iso.includes('T00:00:00.000Z')) {
+    dateObj = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+  }
+  return dateObj.toLocaleDateString('en-US', {
     month: 'short', day: 'numeric', year: 'numeric',
   });
 }
 
-export default function NoteCard({ note, onView, onEdit, onDelete, onArchiveToggle }: Props) {
+export default function NoteCard({ note, onView, onEdit, onDelete, onArchiveToggle, onRestore }: Props) {
   return (
     <Card
       isPressable
@@ -48,43 +56,62 @@ export default function NoteCard({ note, onView, onEdit, onDelete, onArchiveTogg
       </CardBody>
 
       <CardFooter className="px-4 pb-4 pt-0 flex items-center justify-between mt-auto">
-        <span className="text-xs text-default-400 font-medium">{formatDate(note.updatedAt)}</span>
+        <span className="text-xs text-default-400 font-medium">
+          {note.date && `📅 ${formatDate(note.date)}`}
+        </span>
         <div className="flex gap-1" onClick={e => e.stopPropagation()}>
-          <Tooltip content="Edit note" placement="top">
-            <Button
-              id={`btn-edit-${note.id}`}
-              isIconOnly
-              size="sm"
-              variant="light"
-              onPress={onEdit}
-            >
-              ✏️
-            </Button>
-          </Tooltip>
-          <Tooltip content={note.archived ? 'Unarchive note' : 'Archive note'} placement="top">
-            <Button
-              id={`btn-archive-${note.id}`}
-              isIconOnly
-              size="sm"
-              variant="light"
-              color="secondary"
-              onPress={onArchiveToggle}
-            >
-              {note.archived ? '📤' : '🗃️'}
-            </Button>
-          </Tooltip>
-          <Tooltip content="Delete note" color="danger" placement="top">
-            <Button
-              id={`btn-delete-${note.id}`}
-              isIconOnly
-              size="sm"
-              variant="light"
-              color="danger"
-              onPress={onDelete}
-            >
-              🗑️
-            </Button>
-          </Tooltip>
+          {onRestore ? (
+            <Tooltip content="Restore note" placement="top">
+              <Button
+                id={`btn-restore-${note.id}`}
+                isIconOnly
+                size="sm"
+                variant="flat"
+                color="primary"
+                onPress={onRestore}
+              >
+                ♻️
+              </Button>
+            </Tooltip>
+          ) : (
+            <>
+              <Tooltip content="Edit note" placement="top">
+                <Button
+                  id={`btn-edit-${note.id}`}
+                  isIconOnly
+                  size="sm"
+                  variant="light"
+                  onPress={onEdit}
+                >
+                  ✏️
+                </Button>
+              </Tooltip>
+              <Tooltip content={note.archived ? 'Unarchive note' : 'Archive note'} placement="top">
+                <Button
+                  id={`btn-archive-${note.id}`}
+                  isIconOnly
+                  size="sm"
+                  variant="light"
+                  color="secondary"
+                  onPress={onArchiveToggle}
+                >
+                  {note.archived ? '📤' : '🗃️'}
+                </Button>
+              </Tooltip>
+              <Tooltip content="Delete note" color="danger" placement="top">
+                <Button
+                  id={`btn-delete-${note.id}`}
+                  isIconOnly
+                  size="sm"
+                  variant="light"
+                  color="danger"
+                  onPress={onDelete}
+                >
+                  🗑️
+                </Button>
+              </Tooltip>
+            </>
+          )}
         </div>
       </CardFooter>
     </Card>

@@ -9,7 +9,19 @@ interface Props {
   onClose: () => void;
 }
 
-function formatDate(iso: string) {
+function formatDate(iso: string, isDateOnly = false) {
+  if (isDateOnly) {
+    const parts = iso.split('T')[0].split('-');
+    let dateObj = new Date(iso);
+    if (parts.length === 3 && iso.length <= 10) {
+      dateObj = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+    } else if (iso.includes('T00:00:00.000Z')) {
+      dateObj = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+    }
+    return dateObj.toLocaleDateString('en-US', {
+      month: 'long', day: 'numeric', year: 'numeric',
+    });
+  }
   return new Date(iso).toLocaleString('en-US', {
     month: 'short',
     day: 'numeric',
@@ -66,6 +78,9 @@ export default function NoteDetailModal({
               )}
 
               <div className="mt-8 flex flex-col gap-1 text-xs text-default-400">
+                {note.date && (
+                  <span className="text-primary-500 font-medium">Scheduled for {formatDate(note.date, true)}</span>
+                )}
                 <span>Created {formatDate(note.createdAt)}</span>
                 {note.updatedAt !== note.createdAt && (
                   <span>Updated {formatDate(note.updatedAt)}</span>
