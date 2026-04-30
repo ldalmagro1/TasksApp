@@ -6,8 +6,11 @@ import {
   UpdateDateColumn,
   ManyToMany,
   JoinTable,
+  ManyToOne,
+  DeleteDateColumn,
 } from 'typeorm';
 import { Category } from '../../categories/entities/category.entity';
+import { User } from '../../users/entities/user.entity';
 
 @Entity('notes')
 export class Note {
@@ -23,7 +26,10 @@ export class Note {
   @Column({ default: false })
   archived: boolean;
 
-  @ManyToMany(() => Category, (category) => category.notes, { eager: true, cascade: true })
+  @Column({ type: 'date', nullable: true })
+  date: string | null;
+
+  @ManyToMany(() => Category, (category) => category.notes, { eager: true })
   @JoinTable({
     name: 'note_categories',
     joinColumn: { name: 'note_id', referencedColumnName: 'id' },
@@ -36,4 +42,10 @@ export class Note {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @DeleteDateColumn()
+  deletedAt?: Date;
+
+  @ManyToOne(() => User, (user) => user.notes, { onDelete: 'CASCADE' })
+  user: User;
 }
