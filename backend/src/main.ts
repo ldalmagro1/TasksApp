@@ -15,9 +15,9 @@ async function bootstrap() {
     }),
   );
 
-  // CORS for local dev (frontend on port 5173)
+  // CORS
   app.enableCors({
-    origin: ['http://localhost:5173', 'http://localhost:80'],
+    origin: '*',
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
   });
 
